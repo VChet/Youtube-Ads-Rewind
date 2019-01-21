@@ -92,33 +92,41 @@
     });
   }
 
-  function rewind() {
-    if (Object.keys(videosList).indexOf(videoId) > -1) {
-      console.log(`[YouTube Ads Rewind] Rewind from ${videosList[videoId].starts} to ${videosList[videoId].ends}`);
-      setInterval(() => {
-        if (ytPlayer.getPlayerState() == 1) {
-          if (ytPlayer.getCurrentTime().toFixed() == videosList[videoId].starts) {
+  function rewind(videoData) {
+    setInterval(() => {
+      if (ytPlayer.getPlayerState() === 1) {
+        videoData.timings.map(timing => {
+          if (ytPlayer.getCurrentTime().toFixed() == timing.starts) {
             console.log("[YouTube Ads Rewind] Rewinding...");
-            ytPlayer.seekTo(videosList[videoId].ends);
+            ytPlayer.seekTo(timing.ends);
           }
-        }
-      }, 100);
-    } else {
-      return console.warn("[YouTube Ads Rewind] Database is empty");
-    }
+        });
+      }
+    }, 100);
   }
 
   const videoId = ytPlayer.getVideoUrl().match("(?<=v=)[^&\n?#]+")[0];
   console.log(`[YouTube Ads Rewind] Current video ID: ${videoId}`);
 
   // let videosList = await makeRequest("GET", "https://raw.githubusercontent.com/VChet/Youtube-Ads-Rewind/master/db.json");
-  let videosList = {
-    "zSakqtywY5c": {
+  let videosList = [{
+    videoId: "zSakqtywY5c",
+    timings: [{
       "starts": "4",
       "ends": "54"
-    }
-  }
+    },
+    {
+      "starts": "60",
+      "ends": "70"
+    }]
+  }]
   // videosList = JSON.parse(videosList);
   console.log("[YouTube Ads Rewind] DB has been loaded");
-  rewind();
+  const videoData = videosList.find(el => el.videoId === videoId);
+  if (videoData) {
+    videoData.timings.map(timing => console.log(`[YouTube Ads Rewind] Rewind from ${timing.starts} to ${timing.ends}`));
+    rewind(videoData);
+  } else {
+    return console.log("[YouTube Ads Rewind] This video has no advertising data");
+  }
 })();

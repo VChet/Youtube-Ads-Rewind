@@ -1,6 +1,11 @@
-{
-    "zSakqtywY5c": {
-        "start": "4",
-        "stop": "54"
-    }
-}
+[{
+    "videoId": "zSakqtywY5c",
+    "timings": [{
+        "starts": "4",
+        "ends": "54"
+    },
+    {
+        "starts": "60",
+        "ends": "70"
+    }]
+}]
