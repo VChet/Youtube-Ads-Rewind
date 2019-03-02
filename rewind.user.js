@@ -92,16 +92,19 @@ async function startScript() {
   }
 
   function rewind(videoData) {
-    setInterval(() => {
-      if (ytPlayer.getPlayerState() === 1) {
-        videoData.timings.map(timing => {
-          if (ytPlayer.getCurrentTime().toFixed() == timing.starts) {
-            console.log("[YouTube Ads Rewind] Rewinding...");
-            ytPlayer.seekTo(timing.ends);
-          }
-        });
-      }
-    }, 100);
+    // Video is playing
+    if (ytPlayer.getPlayerState() === 1) {
+      videoData.timings.map(timing => {
+        if (ytPlayer.getCurrentTime().toFixed() === timing.starts) {
+          console.log("[YouTube Ads Rewind] Rewinding...");
+          ytPlayer.seekTo(timing.ends);
+        }
+      });
+    // Video is ended or queued
+    } else if (ytPlayer.getPlayerState() === 0 || ytPlayer.getPlayerState() === 5) {
+      console.log("[YouTube Ads Rewind] ClearInterval");
+      clearInterval(videoTimer);
+    }
   }
 
   const videoId = ytPlayer.getVideoUrl().match("(?<=v=)[^&\n?#]+")[0];
@@ -122,9 +125,10 @@ async function startScript() {
   // videosList = JSON.parse(videosList);
   console.log("[YouTube Ads Rewind] DB has been loaded");
   const videoData = videosList.find(el => el.videoId === videoId);
+  let videoTimer;
   if (videoData) {
     videoData.timings.map(timing => console.log(`[YouTube Ads Rewind] Rewind from ${timing.starts} to ${timing.ends}`));
-    rewind(videoData);
+    videoTimer = setInterval(() => rewind(videoData), 100);
   } else {
     return console.log("[YouTube Ads Rewind] This video has no advertising data");
   }
