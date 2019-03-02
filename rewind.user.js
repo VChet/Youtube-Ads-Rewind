@@ -7,10 +7,9 @@
 // @downloadURL  https://github.com/VChet/Youtube-Ads-Rewind/raw/master/rewind.user.js
 // @match        https://www.youtube.com/*
 // ==/UserScript==
+"use strict"
 
-(async () => {
-  "use strict"
-
+async function startScript() {
   const ytMenu = document.querySelector("#watch8-secondary-actions");
   const ytPlayer = document.getElementById("movie_player");
   const startButton = document.createElement("button");
@@ -26,7 +25,7 @@
       return h > 0 ? `${h}:${m}:${s < 10 ? "0" + s : s}` : `${m}:${s < 10 ? "0" + s : s}`;
     }
     this.querySelector("span").dataset.timecode = Math.trunc(ytPlayer.getCurrentTime());
-    return this.querySelector("span").textContent = secondsToHms(ytPlayer.getCurrentTime());;
+    this.querySelector("span").textContent = secondsToHms(ytPlayer.getCurrentTime());;
   }
 
   function sendTiming() {
@@ -129,4 +128,7 @@
   } else {
     return console.log("[YouTube Ads Rewind] This video has no advertising data");
   }
-})();
+}
+
+window.addEventListener("readystatechange", startScript, true)
+window.addEventListener("spfdone", startScript)
