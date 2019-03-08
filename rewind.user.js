@@ -7,7 +7,7 @@
 // @downloadURL  https://github.com/VChet/Youtube-Ads-Rewind/raw/master/rewind.user.js
 // @match        https://www.youtube.com/*
 // ==/UserScript==
-"use strict"
+"use strict";
 
 async function startScript() {
   const ytMenu = document.querySelector("#watch8-secondary-actions");
@@ -23,9 +23,9 @@ async function startScript() {
       const m = Math.floor(time % 3600 / 60);
       const s = Math.floor(time % 3600 % 60);
       return h > 0 ? `${h}:${m}:${s < 10 ? "0" + s : s}` : `${m}:${s < 10 ? "0" + s : s}`;
-    }
+    };
     this.querySelector("span").dataset.timecode = Math.trunc(ytPlayer.getCurrentTime());
-    this.querySelector("span").textContent = secondsToHms(ytPlayer.getCurrentTime());;
+    this.querySelector("span").textContent = secondsToHms(ytPlayer.getCurrentTime());
   }
 
   function sendTiming() {
@@ -67,30 +67,7 @@ async function startScript() {
 
   ytMenu.append(startButton, stopButton, sendButton);
 
-  const makeRequest = (method, url) => {
-    return new Promise((resolve, reject) => {
-      let xhr = new XMLHttpRequest();
-      xhr.open(method, url);
-      xhr.onload = () => {
-        if (this.status === 200) {
-          resolve(xhr.response);
-        } else {
-          reject({
-            status: this.status,
-            statusText: xhr.statusText
-          });
-        }
-      };
-      xhr.onerror = () => {
-        reject({
-          status: this.status,
-          statusText: xhr.statusText
-        });
-      };
-      xhr.send();
-    });
-  }
-
+  let videoTimer;
   function rewind(videoData) {
     // Video is playing
     if (ytPlayer.getPlayerState() === 1) {
@@ -125,7 +102,6 @@ async function startScript() {
   // videosList = JSON.parse(videosList);
   console.log("[YouTube Ads Rewind] DB has been loaded");
   const videoData = videosList.find(el => el.videoId === videoId);
-  let videoTimer;
   if (videoData) {
     videoData.timings.map(timing => console.log(`[YouTube Ads Rewind] Rewind from ${timing.starts} to ${timing.ends}`));
     videoTimer = setInterval(() => rewind(videoData), 100);
@@ -134,5 +110,5 @@ async function startScript() {
   }
 }
 
-window.addEventListener("readystatechange", startScript, true)
-window.addEventListener("spfdone", startScript)
+window.addEventListener("readystatechange", startScript, true);
+window.addEventListener("spfdone", startScript);
