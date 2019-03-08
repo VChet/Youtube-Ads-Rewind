@@ -6,6 +6,7 @@
 // @supportURL   https://github.com/VChet/Youtube-Ads-Rewind/issues
 // @downloadURL  https://github.com/VChet/Youtube-Ads-Rewind/raw/master/rewind.user.js
 // @match        https://www.youtube.com/*
+// @grant        GM.xmlHttpRequest
 // ==/UserScript==
 "use strict";
 
@@ -87,20 +88,26 @@ async function startScript() {
   const videoId = ytPlayer.getVideoUrl().match("(?<=v=)[^&\n?#]+")[0];
   console.log(`[YouTube Ads Rewind] Current video ID: ${videoId}`);
 
-  // let videosList = await makeRequest("GET", "https://raw.githubusercontent.com/VChet/Youtube-Ads-Rewind/master/db.json");
-  let videosList = [{
-    videoId: "zSakqtywY5c",
-    timings: [{
-      "starts": "4",
-      "ends": "54"
-    },
-    {
-      "starts": "60",
-      "ends": "70"
-    }]
-  }]
-  // videosList = JSON.parse(videosList);
-  console.log("[YouTube Ads Rewind] DB has been loaded");
+  function makeRequest(method, url) {
+    return new Promise((resolve, reject) => {
+      GM.xmlHttpRequest({
+        method,
+        url,
+        onload: res => {
+          console.log("[YouTube Ads Rewind] Response status:", res.status);
+          const data = JSON.parse(res.responseText);
+          resolve(data.response);
+        },
+        onerror: error => {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  const videosList = await makeRequest("GET", "http://localhost:7542/api/videos");
+  if (!videosList) return console.log("[YouTube Ads Rewind] Error loading DB");
+  console.log("[YouTube Ads Rewind] DB has been loaded", videosList);
   const videoData = videosList.find(el => el.videoId === videoId);
   if (videoData) {
     videoData.timings.map(timing => console.log(`[YouTube Ads Rewind] Rewind from ${timing.starts} to ${timing.ends}`));
