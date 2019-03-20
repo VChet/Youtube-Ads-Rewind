@@ -110,12 +110,9 @@ async function startScript() {
     }
   }
 
-  const videosList = await makeRequest("GET", "http://localhost:7542/api/videos");
-  if (!videosList) return console.log("[YouTube Ads Rewind] Error loading DB");
-  console.log("[YouTube Ads Rewind] DB has been loaded", videosList);
-  addButtons();
-  const videoData = videosList.find(el => el.videoId === videoId);
+  const videoData = await makeRequest("GET", `http://localhost:7542/api/video/check?videoId=${videoId}`);
   if (videoData) {
+    addButtons();
     videoData.timings.map(timing => console.log(`[YouTube Ads Rewind] Rewind from ${timing.starts} to ${timing.ends}`));
     videoTimer = setInterval(() => rewind(videoData), 100);
   } else {
