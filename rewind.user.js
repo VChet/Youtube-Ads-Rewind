@@ -110,6 +110,10 @@ async function startScript() {
     }
   }
 
+  const currentVideoData = ytPlayer.getVideoData();
+  if (currentVideoData.isLive) {
+    return console.log("[YouTube Ads Rewind] Script is not available for live translations");
+  }
   const videoData = await makeRequest("GET", `http://localhost:7542/api/video/check?videoId=${videoId}`);
   if (videoData) {
     addButtons();
