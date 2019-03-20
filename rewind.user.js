@@ -13,6 +13,8 @@
 async function startScript() {
   const ytMenu = document.querySelector("#watch8-secondary-actions");
   const ytPlayer = document.getElementById("movie_player");
+  const videoId = ytPlayer.getVideoUrl().match("(?<=v=)[^&\n?#]+")[0];
+  console.log(`[YouTube Ads Rewind] Current video ID: ${videoId}`);
   const startButton = document.createElement("button");
   const stopButton = document.createElement("button");
   const sendButton = document.createElement("button");
@@ -29,15 +31,35 @@ async function startScript() {
     this.querySelector("span").textContent = secondsToHms(ytPlayer.getCurrentTime());
   }
 
-  function sendTiming() {
+  function makeRequest(method, url, data = {}) {
+    return new Promise((resolve, reject) => {
+      GM.xmlHttpRequest({
+        method,
+        url,
+        data,
+        onload: res => {
+          console.log("[YouTube Ads Rewind] Response status:", res.status);
+          const data = JSON.parse(res.responseText);
+          resolve(data.response);
+        },
+        onerror: error => {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  async function sendTiming() {
     const starts = startButton.querySelector("span").dataset.timecode;
     const ends = stopButton.querySelector("span").dataset.timecode;
     if (starts && ends) {
-      if (starts > ends) {
-        return console.warn("[YouTube Ads Rewind] Incorrect time codes");
-      }
-      const videoId = ytPlayer.getVideoUrl().match("(?<=v=)[^&\n?#]+")[0];
-      return console.log({ videoId, starts, ends });
+      if (starts > ends) return console.warn("[YouTube Ads Rewind] Incorrect time codes");
+      const data = {
+        id: videoId,
+        timings: starts, ends
+      };
+      const response = await makeRequest("POST", "http://localhost:7542/api/video/report", data);
+      return console.log({ response });
     } else {
       return console.warn("[YouTube Ads Rewind] No time codes");
     }
@@ -83,26 +105,6 @@ async function startScript() {
       console.log("[YouTube Ads Rewind] ClearInterval");
       clearInterval(videoTimer);
     }
-  }
-
-  const videoId = ytPlayer.getVideoUrl().match("(?<=v=)[^&\n?#]+")[0];
-  console.log(`[YouTube Ads Rewind] Current video ID: ${videoId}`);
-
-  function makeRequest(method, url) {
-    return new Promise((resolve, reject) => {
-      GM.xmlHttpRequest({
-        method,
-        url,
-        onload: res => {
-          console.log("[YouTube Ads Rewind] Response status:", res.status);
-          const data = JSON.parse(res.responseText);
-          resolve(data.response);
-        },
-        onerror: error => {
-          reject(error);
-        }
-      });
-    });
   }
 
   const videosList = await makeRequest("GET", "http://localhost:7542/api/videos");
