@@ -25,7 +25,7 @@ async function startScript() {
         onload: res => {
           console.log("[YouTube Ads Rewind] Response status:", res.status);
           const data = JSON.parse(res.responseText);
-          resolve(data.response);
+          resolve(data);
         },
         onerror: error => {
           reject(error);
@@ -113,14 +113,22 @@ async function startScript() {
   if (ytPlayer.getVideoData().isLive) {
     return console.log("[YouTube Ads Rewind] Script is not available for live translations");
   }
-  const videoData = await makeRequest("GET", `http://localhost:7542/api/video/check?videoId=${videoId}`);
-  if (videoData) {
+  makeRequest("GET", `http://localhost:7542/api/video/check?videoId=${videoId}`).then(videoData => {
     addButtons();
-    videoData.timings.map(timing => console.log(`[YouTube Ads Rewind] Rewind from ${timing.starts} to ${timing.ends}`));
-    videoTimer = setInterval(() => rewind(videoData), 100);
-  } else {
-    return console.log("[YouTube Ads Rewind] This video has no advertising data");
-  }
+    if (videoData.error) {
+      return console.log("[YouTube Ads Rewind]", videoData.error);
+    } else if (videoData.response) {
+      videoData.response.timings.map(timing => console.log(`[YouTube Ads Rewind] Rewind from ${timing.starts} to ${timing.ends}`));
+      videoTimer = setInterval(() => rewind(videoData), 100);
+    } else {
+      return console.log("[YouTube Ads Rewind] This video has no advertising data");
+    }
+  }).catch(error => {
+    if (error.status === 0) {
+      return console.log("[YouTube Ads Rewind] Server is unavailable");
+    }
+    return console.warn("[YouTube Ads Rewind]", {error});
+  });
 }
 
 window.addEventListener("readystatechange", startScript, true);
