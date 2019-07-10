@@ -14,6 +14,7 @@ async function startScript() {
   const ytMenu = document.querySelector("#watch8-secondary-actions");
   const ytPlayer = document.getElementById("movie_player");
   const videoId = ytPlayer.getVideoData().video_id;
+  const server = "http://localhost:7542";
   console.log(`[YouTube Ads Rewind] Current video ID: ${videoId}`);
 
   function makeRequest(method, url, data = {}) {
@@ -60,7 +61,7 @@ async function startScript() {
           id: videoId,
           timings: starts, ends
         };
-        const response = await makeRequest("POST", "http://localhost:7542/api/video/report", data);
+        const response = await makeRequest("POST", `${server}/api/video/report`, data);
         return console.log({ response });
       } else {
         return console.warn("[YouTube Ads Rewind] No time codes");
@@ -113,7 +114,7 @@ async function startScript() {
   if (ytPlayer.getVideoData().isLive) {
     return console.log("[YouTube Ads Rewind] Script is not available for live translations");
   }
-  makeRequest("GET", `http://localhost:7542/api/video/check?videoId=${videoId}`).then(videoData => {
+  makeRequest("GET", `${server}/api/video/check?videoId=${videoId}`).then(videoData => {
     addButtons();
     if (videoData.error) {
       return console.log("[YouTube Ads Rewind]", videoData.error);
