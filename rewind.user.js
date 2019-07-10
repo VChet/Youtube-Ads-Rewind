@@ -11,7 +11,16 @@
 "use strict";
 
 async function startScript() {
-  const ytMenu = document.querySelector("#watch8-secondary-actions");
+  let isClassicDesign;
+  if (document.querySelector("meta[http-equiv='origin-trial']")) {
+    isClassicDesign = false;
+  } else if (document.querySelector("meta[http-equiv='Content-Type']")) {
+    console.log("Mobile mode");
+    return;
+  } else {
+    isClassicDesign = true;
+  }
+
   const ytPlayer = document.getElementById("movie_player");
   const videoId = ytPlayer.getVideoData().video_id;
   const server = "http://localhost:7542";
@@ -36,9 +45,21 @@ async function startScript() {
   }
 
   function addButtons() {
-    const startButton = document.createElement("button");
-    const stopButton = document.createElement("button");
-    const sendButton = document.createElement("button");
+    let startButton;
+    let stopButton;
+    let sendButton;
+    let ytMenu;
+    if (isClassicDesign) {
+      startButton = document.createElement("button");
+      stopButton = document.createElement("button");
+      sendButton = document.createElement("button");
+      ytMenu = document.querySelector("#watch8-secondary-actions");
+    } else {
+      startButton = document.createElement("yt-icon-button");
+      stopButton = document.createElement("yt-icon-button");
+      sendButton = document.createElement("yt-icon-button");
+      ytMenu = document.querySelector("#top-row.ytd-video-secondary-info-renderer");
+    }
 
     function setTiming() {
       const secondsToHms = time => {
@@ -72,26 +93,38 @@ async function startScript() {
     stopButton.addEventListener("click", setTiming);
     sendButton.addEventListener("click", sendTiming);
 
-    const styleClasses = [
-      "action-panel-trigger",
-      "no-icon-markup",
-      "pause-resume-autoplay",
-      "yt-uix-button-content",
-      "yt-uix-button-opacity",
-      "yt-uix-button-size-default",
-      "yt-uix-button",
-      "yt-uix-tooltip"
-    ];
+    let styleClasses;
+    if (isClassicDesign) {
+      styleClasses = [
+        "action-panel-trigger",
+        "no-icon-markup",
+        "pause-resume-autoplay",
+        "yt-uix-button-content",
+        "yt-uix-button-opacity",
+        "yt-uix-button-size-default",
+        "yt-uix-button",
+        "yt-uix-tooltip"
+      ];
+    } else {
+      styleClasses = [
 
+      ];
+    }
     startButton.classList.add(...styleClasses);
     stopButton.classList.add(...styleClasses);
     sendButton.classList.add(...styleClasses);
 
-    startButton.innerHTML = "Начало <span></span>";
-    stopButton.innerHTML = "Конец <span></span>";
-    sendButton.innerHTML = "Сообщить";
-
-    ytMenu.append(startButton, stopButton, sendButton);
+    if (isClassicDesign) {
+      startButton.innerHTML = "Starts <span></span>";
+      stopButton.innerHTML = "Ends <span></span>";
+      sendButton.innerHTML = "Report";
+      ytMenu.append(startButton, stopButton, sendButton);
+    } else {
+      startButton.innerHTML = "<yt-formatted-string>Starts <span></span></yt-formatted-string>";
+      stopButton.innerHTML = "<yt-formatted-string>Ends <span></span></yt-formatted-string>";
+      sendButton.innerHTML = "<yt-formatted-string>Report</yt-formatted-string>";
+      ytMenu.append(startButton, stopButton, sendButton);
+    }
   }
 
   let videoTimer;
@@ -134,3 +167,4 @@ async function startScript() {
 
 window.addEventListener("readystatechange", startScript, true);
 window.addEventListener("spfdone", startScript);
+window.addEventListener("yt-navigate-start", startScript);
